@@ -8,7 +8,7 @@
 // nothing is saved, and a small bar at the top says so.
 // ---------------------------------------------------------------
 window.HALLOWEEN_CONFIG = {
-  SCRIPT_URL: '',
+  SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbydsRHDjZpENWp2CGT8PluhKNH4TApzsgLOZaeWREYbMm41VGe8fpqy2LcnLS8DCQ6VCA/exec',
   SEAT_LIMIT: 100,
   CONTACT_EMAIL: 'vabanina@langara.ca'
 };
