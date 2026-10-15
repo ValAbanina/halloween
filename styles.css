@@ -77,6 +77,40 @@ button { font: inherit; cursor: pointer; }
   padding: 8px 16px;
 }
 
+/* ---------- enter screen ---------- */
+.gate {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  place-items: center;
+  padding: 24px 16px;
+  background: radial-gradient(circle at 50% 38%, var(--dusk) 0%, var(--night) 45%, var(--ink) 100%);
+  color: var(--white);
+  text-align: center;
+  transition: opacity .6s ease;
+}
+.js .gate { display: grid; }
+.gate.is-leaving { opacity: 0; pointer-events: none; }
+html.gate-open, html.gate-open body { overflow: hidden; }
+.gate__inner { max-width: 640px; cursor: default; }
+.gate__bat { display: block; margin: 0 auto; width: 96px; height: 37px; fill: var(--yellow); overflow: visible; }
+.gate__bat use { transform-origin: 50% 40%; transform-box: fill-box; animation: flap .2s steps(1, end) infinite; }
+.gate__title {
+  margin: 24px 0 40px;
+  color: var(--yellow);
+  font-size: clamp(40px, 9vw, 84px);
+  font-weight: 800;
+  line-height: .95;
+  text-transform: uppercase;
+}
+.gate__btn { font-size: 24px; cursor: pointer; }
+.gate__hint { margin: 36px 0 0; color: var(--muted); font-size: 16px; }
+@media (prefers-reduced-motion: reduce) {
+  .gate { transition: none; }
+  .gate__bat use { animation: none; }
+}
+
 /* ---------- sound toggle ---------- */
 .sound-toggle {
   position: fixed;

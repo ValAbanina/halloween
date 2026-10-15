@@ -108,8 +108,10 @@
   var soundOn = true;
   var musicPlaying = false;
   var fadeTimer = null;
-  var PREF_KEY = 'hw2026-sound';
+  // New name, so visitors whose sound was switched off by an older version start with sound on again.
+  var PREF_KEY = 'hw2026-sound-v2';
   var toggle = $('#soundToggle');
+  var gate = $('#gate');
   var toggleLabel = $('.sound-toggle__label', toggle);
 
   function fadeMusic(to, ms, done) {
@@ -177,7 +179,32 @@
   if (soundOn) {
     music.preload = 'auto';
     wind.preload = 'auto';
-    startMusic().then(function (ok) { if (ok) removeUnlock(); });
+    // If this browser lets the music start by itself, skip the Enter screen.
+    startMusic().then(function (ok) { if (ok) { removeUnlock(); closeGate(); } });
+  }
+
+  /* Enter screen: its click is the "first click" the browser needs. */
+  function closeGate() {
+    if (!gate || gate.hidden || gate.classList.contains('is-leaving')) return;
+    document.documentElement.classList.remove('gate-open');
+    if (reduceMotion) { gate.hidden = true; return; }
+    gate.classList.add('is-leaving');
+    setTimeout(function () { gate.hidden = true; }, 650);
+  }
+  if (gate) {
+    if (!soundOn) {
+      gate.hidden = true; // they turned sound off with the button on an earlier visit
+    } else {
+      document.documentElement.classList.add('gate-open');
+      try { $('#gateBtn').focus({ preventScroll: true }); } catch (e) {}
+      // A click anywhere on the screen enters, with sound.
+      gate.addEventListener('click', function () {
+        startMusic().then(function (ok) { if (ok) removeUnlock(); });
+        play('creak', 0.8);
+        closeGate();
+      });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeGate(); });
+    }
   }
 
   function play(name, volume) {
