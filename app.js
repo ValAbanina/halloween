@@ -101,15 +101,14 @@
   var sfx = {
     creak: SND + 'sfx-door-creak.mp3',
     whoosh: SND + 'sfx-whoosh.mp3',
-    success: SND + 'sfx-success.mp3',
+    success: SND + 'sfx-success-soft.mp3',
     boo: SND + 'sfx-boo.mp3'
   };
   var sfxCache = {};
   var soundOn = true;
   var musicPlaying = false;
   var fadeTimer = null;
-  // New name, so visitors whose sound was switched off by an older version start with sound on again.
-  var PREF_KEY = 'hw2026-sound-v2';
+  var PREF_KEY = 'hw2026-sound';
   var toggle = $('#soundToggle');
   var toggleLabel = $('.sound-toggle__label', toggle);
 
@@ -126,13 +125,9 @@
     }, ms / steps);
   }
 
-  // The button shows what is really happening:
-  //   playing -> "Sound on"; blocked by the browser -> "Tap for sound"; off -> "Sound off".
   function showToggle() {
-    var waiting = soundOn && !musicPlaying;
-    toggle.setAttribute('aria-pressed', soundOn && musicPlaying ? 'true' : 'false');
-    toggle.classList.toggle('is-waiting', waiting);
-    toggleLabel.textContent = !soundOn ? 'Sound off' : (musicPlaying ? 'Sound on' : 'Tap for sound');
+    toggle.setAttribute('aria-pressed', soundOn ? 'true' : 'false');
+    toggleLabel.textContent = soundOn ? 'Sound on' : 'Sound off';
   }
 
   // Try to play. Resolves true if the browser allowed it.
@@ -141,13 +136,12 @@
     var p;
     try { p = music.play(); } catch (e) { return Promise.resolve(false); }
     try { var pw = wind.play(); if (pw && pw.catch) pw.catch(function () {}); } catch (e) {}
-    if (!p || !p.then) { musicPlaying = !music.paused; if (musicPlaying) fadeMusic(1, 2500); showToggle(); return Promise.resolve(musicPlaying); }
+    if (!p || !p.then) { musicPlaying = !music.paused; if (musicPlaying) fadeMusic(1, 2500); return Promise.resolve(musicPlaying); }
     return p.then(function () {
       musicPlaying = true;
       fadeMusic(1, 2500);
-      showToggle();
       return true;
-    }).catch(function () { showToggle(); return false; });
+    }).catch(function () { return false; });
   }
 
   function setSound(on, remember) {
@@ -157,7 +151,6 @@
     if (on) startMusic();
     else {
       musicPlaying = false;
-      showToggle();
       fadeMusic(0, 500, function () { music.pause(); wind.pause(); });
     }
   }
@@ -185,35 +178,12 @@
     if (!soundOn || !sfx[name]) return;
     var a = sfxCache[name] || (sfxCache[name] = new Audio(sfx[name]));
     try { a.currentTime = 0; } catch (e) {}
-    a.muted = false;
     a.volume = volume == null ? 0.7 : volume;
     var p = a.play();
     if (p && p.catch) p.catch(function () {});
   }
 
-  // Some browsers (Safari, iPhone) only let a sound play later if it was
-  // started once during a tap. The registration answer arrives a few
-  // seconds after the tap, so we start these sounds silently on the tap.
-  function primeSfx(names) {
-    if (!soundOn) return;
-    names.forEach(function (name) {
-      var a = sfxCache[name] || (sfxCache[name] = new Audio(sfx[name]));
-      if (a.primed) return;
-      a.primed = true;
-      a.muted = true;
-      var p;
-      try { p = a.play(); } catch (e) { a.muted = false; a.primed = false; return; }
-      var stop = function () { if (a.muted) { a.pause(); try { a.currentTime = 0; } catch (e) {} a.muted = false; } };
-      if (p && p.then) p.then(stop).catch(function () { a.muted = false; a.primed = false; });
-      else stop();
-    });
-  }
-
-  toggle.addEventListener('click', function () {
-    // Sound is on but the browser held it back: this tap starts it.
-    if (soundOn && !musicPlaying) { startMusic().then(function (ok) { if (ok) removeUnlock(); }); return; }
-    setSound(!soundOn, true);
-  });
+  toggle.addEventListener('click', function () { setSound(!soundOn, true); });
 
   $('#enterBtn').addEventListener('click', function () {
     if (!soundOn) setSound(true, true);
@@ -230,7 +200,7 @@
   // Pause music when the tab is hidden, resume when back.
   document.addEventListener('visibilitychange', function () {
     if (!soundOn) return;
-    if (document.hidden) { music.pause(); wind.pause(); musicPlaying = false; showToggle(); }
+    if (document.hidden) { music.pause(); wind.pause(); musicPlaying = false; }
     else startMusic();
   });
 
@@ -540,7 +510,6 @@
       return;
     }
 
-    primeSfx(['success', 'boo']);
     busy = true;
     var label = submitBtn.textContent;
     submitBtn.textContent = 'Summoning the spirits…';
@@ -579,6 +548,6 @@
     s.classList.add('is-in');
     s.focus({ preventScroll: true });
     $('#register').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
-    play('success', 0.8);
+    play('success', 0.6);
   }
 })();
