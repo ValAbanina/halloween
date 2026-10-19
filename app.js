@@ -27,38 +27,64 @@
     return function () { s = (s * 9301 + 49297) % 233280; return s / 233280; };
   }
 
+  // The fence keeps its height. On screens wider than 1440 it is drawn
+  // longer (more posts) instead of being scaled up, so the tops of the
+  // posts and graves are never cut off.
+  function fenceWidth(el, H) {
+    var box = el.getBoundingClientRect();
+    return box.height ? Math.max(1440, Math.ceil(box.width * H / box.height)) : 1440;
+  }
+
   function drawFence(el) {
     var hero = el.getAttribute('data-fence') === 'hero';
     var H = hero ? 180 : 130;
+    var W = fenceWidth(el, H);
+    var k = W / 1440;
+    el.setAttribute('data-fence-w', W);
     var r = rand(hero ? 7 : 13);
     var ns = 'http://www.w3.org/2000/svg';
     var svg = document.createElementNS(ns, 'svg');
-    svg.setAttribute('viewBox', '0 0 1440 ' + H);
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
     svg.setAttribute('preserveAspectRatio', 'xMidYMax slice');
     var out = '';
     var groundY = H - (hero ? 60 : 27);
     var railY = groundY - (hero ? 48 : 36);
 
     if (hero) {
-      // tombstones (arched tops, leaning)
+      // tombstones (arched tops, leaning), spread across the width
       [[86, 100, 135, 6], [576, 80, 108, -7], [1123, 110, 149, 6]].forEach(function (t) {
-        var x = t[0], w = t[1], h = t[2], y = groundY - h + 30;
+        var x = Math.round(t[0] * k), w = t[1], h = t[2], y = groundY - h + 30;
         out += '<path transform="rotate(' + t[3] + ' ' + (x + w / 2) + ' ' + (y + h) + ')" d="M' + x + ' ' + (y + h) +
           'V' + (y + w / 2) + 'A' + (w / 2) + ' ' + (w / 2) + ' 0 0 1 ' + (x + w) + ' ' + (y + w / 2) + 'V' + (y + h) + 'Z"/>';
       });
     }
-    for (var x = 0; x < 1460; x += 57 + Math.round(r() * 16)) {
+    for (var x = 0; x < W + 20; x += 57 + Math.round(r() * 16)) {
       var h = (hero ? 100 : 85) + Math.round(r() * (hero ? 75 : 45));
       var rot = (r() * 12 - 6).toFixed(1);
       out += '<rect x="' + x + '" y="' + (groundY + 20 - h) + '" width="' + (hero ? 11 : 10) + '" height="' + h +
         '" transform="rotate(' + rot + ' ' + (x + 5) + ' ' + (groundY + 20) + ')"/>';
     }
-    out += '<rect x="-20" y="' + railY + '" width="1480" height="8" transform="rotate(' + (hero ? -1 : 1) + ' 720 ' + railY + ')"/>';
-    out += '<rect x="0" y="' + groundY + '" width="1440" height="' + (H - groundY) + '"/>';
+    // same slope at the ends as on a 1440 screen
+    var tilt = ((hero ? -1 : 1) / k).toFixed(3);
+    out += '<rect x="-20" y="' + railY + '" width="' + (W + 40) + '" height="8" transform="rotate(' + tilt + ' ' + (W / 2) + ' ' + railY + ')"/>';
+    out += '<rect x="0" y="' + groundY + '" width="' + W + '" height="' + (H - groundY) + '"/>';
     svg.innerHTML = out;
+    el.innerHTML = '';
     el.appendChild(svg);
   }
-  $$('[data-fence]').forEach(drawFence);
+  var fences = $$('[data-fence]');
+  fences.forEach(drawFence);
+  // Redraw only when the window gets wide enough to need a longer fence.
+  var fenceTimer = null;
+  window.addEventListener('resize', function () {
+    clearTimeout(fenceTimer);
+    fenceTimer = setTimeout(function () {
+      fences.forEach(function (el) {
+        var H = el.getAttribute('data-fence') === 'hero' ? 180 : 130;
+        if (String(fenceWidth(el, H)) !== el.getAttribute('data-fence-w')) drawFence(el);
+      });
+    }, 150);
+  });
 
   /* ---------------------------------------------------------
      Reveal on scroll
