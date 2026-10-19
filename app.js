@@ -152,13 +152,13 @@
     }, ms / steps);
   }
 
-  // The button shows what is really happening:
-  //   playing -> "Sound on"; blocked by the browser -> "Tap for sound"; off -> "Sound off".
+  // The button shows what you actually hear: "Sound on" only while music plays.
+  // If the browser blocks the music at first, it shows "Sound off" and
+  // switches to "Sound on" on the visitor's first click or tap.
   function showToggle() {
-    var waiting = soundOn && !musicPlaying;
-    toggle.setAttribute('aria-pressed', soundOn && musicPlaying ? 'true' : 'false');
-    toggle.classList.toggle('is-waiting', waiting);
-    toggleLabel.textContent = !soundOn ? 'Sound off' : (musicPlaying ? 'Sound on' : 'Tap for sound');
+    var playing = soundOn && musicPlaying;
+    toggle.setAttribute('aria-pressed', playing ? 'true' : 'false');
+    toggleLabel.textContent = playing ? 'Sound on' : 'Sound off';
   }
 
   // Try to play. Resolves true if the browser allowed it.
