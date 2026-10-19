@@ -9,6 +9,6 @@
 // ---------------------------------------------------------------
 window.HALLOWEEN_CONFIG = {
   SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbydsRHDjZpENWp2CGT8PluhKNH4TApzsgLOZaeWREYbMm41VGe8fpqy2LcnLS8DCQ6VCA/exec',
-  SEAT_LIMIT: 100,
+  SEAT_LIMIT: 200,
   CONTACT_EMAIL: 'vabanina@langara.ca'
 };

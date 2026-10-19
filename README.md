@@ -50,4 +50,4 @@ If you change `Code.gs` later: **Deploy → Manage deployments → Edit (pencil)
 - Sound is **on** by default. Browsers block music until the visitor taps, clicks or presses a key, so the music starts on their first tap or click anywhere on the page. If a visitor turns sound off, their browser remembers it.
 - People who set "reduce motion" on their device get the page without animation.
 - No API keys are in this page. The ElevenLabs key was only used to make the sound files.
-- Seat limit (100), closing time (6:00 PM on the day) and the program list are set at the top of `Code.gs`.
+- Seat limit (200), closing time (6:00 PM on the day) and the program list are set at the top of `Code.gs`.
